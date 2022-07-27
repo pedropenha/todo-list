@@ -1,7 +1,7 @@
 <template>
-  <button :class="classButton" @click.prevent="$emit('action')">
+  <button :class="classButton === '' ? 'button-style' : classButton" @click.prevent="$emit('action')">
     <slot></slot>
-    <span class="material-icons">{{ icon }}</span>
+    <span v-if="icon.length > 0" class="material-icons">{{ icon }}</span>
   </button>
 </template>
 
@@ -10,16 +10,19 @@ export default{
   props:{
     classButton:{
       type: String,
-      default: 'button is-info'
+      default: ''
     },
     icon:{
       type: String,
-      default: 'edit'
+      default: ''
     }
   }
 }
 </script>
 
 <style scoped>
-
+.button-style{
+  background-color: transparent;
+  border: none;
+}
 </style>

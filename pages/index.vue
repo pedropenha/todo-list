@@ -36,7 +36,7 @@
         <hr/>
         <div class="is-flex is-flex-wrap-wrap is-justify-content-space-between hv-100" v-if="todoList.length > 0">
           <div class="w-30" v-for="{id, name, tasks} in todoList" :key="id">
-            <Button classButton="button is-primary" @action="openTodoList(id)">
+            <Button @action="openTodoList(id)">
               <TaskCard>
                 <div>
                   <h1 class="title">{{ name }}</h1>
