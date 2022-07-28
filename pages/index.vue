@@ -27,7 +27,7 @@
               </div>
               <div class="is-flex w-40 is-justify-content-space-between" :id="id+'d'">
                   <Button icon="check" classButton="button is-success" @action="concludedTask(id, idTodo)" v-if="concluded === '0'"/>
-                  <Button icon="undo" classButton="button is-link" @action="undoTask(id, idTodo)" v-else/>
+                  <Button icon="undo" classButton="button is-link" @action="unConcludeTask(id, idTodo)" v-else/>
                   <Button icon="edit" classButton="button is-info" @action="editTask(id, content)"/>
                   <Button icon="delete" classButton="button is-danger" @action="deleteTask(id, content)"/>
                 </div>
@@ -41,9 +41,9 @@
           </div>
         </form>
       </Modal>
-      <div class="container mt-6 hv-100">
-        <div class="w-100 is-flex is-justify-content-space-between pb-5">
-          <form class="is-flex w-100 is-justify-content-space-between is-align-items-center" @submit.prevent="insertTodo">
+      <div class="container mt-6 mb-6">
+        <div class="w-100 is-flex justify-content pb-5">
+          <form class="is-flex w-100 w-sm-80 is-justify-content-space-between is-align-items-center" @submit.prevent="insertTodo">
             <label for="toDoListName" class="label">Todo list Name</label>
             <input class="input w-100" v-model="todo.name" type="text" style="width: 65%"/>
             <button class="button is-primary" type="submit">
@@ -53,9 +53,9 @@
           </form>
         </div>
         <hr/>
-        <div class="is-flex is-flex-wrap-wrap is-justify-content-space-between hv-100" v-if="todoList.length > 0">
+        <div class="is-flex is-flex-wrap-wrap justify-content" v-if="todoList.length > 0">
           <div class="w-30" v-for="{id, title} in todoList" :key="id">
-            <TaskCard>
+            <TaskCard class="mb-6">
               <div class="w-100">
                 <h1 class="title w-100" :id="id">{{ title }}</h1>
                 <div class="is-hidden" :id="id+'i'">
@@ -131,6 +131,7 @@ export default{
       this.$axios.post('http://localhost:8080/todoList', {title: this.todo.name}).then(async () => {
         const response = await this.$axios.get('http://localhost:8080/todoList')
         this.todoList = response.data
+        this.todo.name = ''
       }).catch((e) => {
         console.log(e)
       })
@@ -201,8 +202,8 @@ export default{
       })
     },
 
-    undoTask(idTask, idTodo){
-      this.$axios.put('http://localhost:8080/task/undoconcluded/', {id:idTask}).then(async () => {
+    unConcludeTask(idTask, idTodo){
+      this.$axios.put('http://localhost:8080/task/unconclude/', {id:idTask}).then(async () => {
         const response = await this.$axios.get('http://localhost:8080/task/taskByIdTodo/'+idTodo)
         this.tasks = response.data.tasks
       })
@@ -277,6 +278,22 @@ export default{
 
 .w-60{
   width: 60%;
+}
+
+.justify-content{
+  justify-content: space-between;
+}
+
+@media screen and (max-width: 900px){
+  .w-30{
+    width: 80%;
+  }
+  .justify-content{
+    justify-content: center;
+  }
+  .w-sm-80{
+    width: 80% !important;
+  }
 }
 
 </style>
