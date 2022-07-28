@@ -1,5 +1,5 @@
 <template>
-  <button :class="classButton === '' ? 'button-style' : classButton" @click.prevent="$emit('action')">
+  <button :class="classButton === '' ? 'button-style' : classButton" @click.prevent="$emit('action')" :type="typeButton">
     <slot></slot>
     <span v-if="icon.length > 0" class="material-icons">{{ icon }}</span>
   </button>
@@ -15,6 +15,10 @@ export default{
     icon:{
       type: String,
       default: ''
+    },
+    typeButton:{
+      type: String,
+      default: 'button'
     }
   }
 }
