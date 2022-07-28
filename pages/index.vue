@@ -15,9 +15,9 @@
           </div>
           <hr/>
           <div v-if="tasks.length > 0">
-            <div class="is-flex is-justify-content-center is-align-content-center is-flex-wrap-wrap w-100" v-for="{id, idTodo, content} in tasks" :key="id" v-if="tasks.length > 0">
+            <div class="is-flex is-justify-content-center is-align-content-center is-flex-wrap-wrap w-100" v-for="{id, idTodo, concluded, content} in tasks" :key="id" v-if="tasks.length > 0">
             <div class="w-100 task-item p-3 mb-3 is-flex is-justify-content-space-between">
-              <p class="is-bold is-flex is-align-items-center w-60" :id="id+'p'">{{ content }}</p>
+              <p class="is-bold is-flex is-align-items-center w-60" :id="id+'p'" :style="concluded === '1' ? 'text-decoration: line-through' : ''">{{ content }}</p>
               <div class="is-hidden is-justify-content-space-between w-100" :id="id+'i'">
                 <input class="input w-60" v-model="newContentTask"/>
                 <div class="is-flex is-justify-content-flex-end w-40">
@@ -26,7 +26,8 @@
                 </div>
               </div>
               <div class="is-flex w-40 is-justify-content-space-between" :id="id+'d'">
-                  <Button icon="check" classButton="button is-success" @action="concludeTask(id)"/>
+                  <Button icon="check" classButton="button is-success" @action="concludedTask(id, idTodo)" v-if="concluded === '0'"/>
+                  <Button icon="undo" classButton="button is-link" @action="undoTask(id, idTodo)" v-else/>
                   <Button icon="edit" classButton="button is-info" @action="editTask(id, content)"/>
                   <Button icon="delete" classButton="button is-danger" @action="deleteTask(id, content)"/>
                 </div>
@@ -191,6 +192,20 @@ export default{
         this.tasks = response.data.tasks
       })
       this.cancelActionTask(idTask)
+    },
+
+    concludedTask(idTask, idTodo){
+      this.$axios.put('http://localhost:8080/task/concluded/', {id:idTask}).then(async () => {
+        const response = await this.$axios.get('http://localhost:8080/task/taskByIdTodo/'+idTodo)
+        this.tasks = response.data.tasks
+      })
+    },
+
+    undoTask(idTask, idTodo){
+      this.$axios.put('http://localhost:8080/task/undoconcluded/', {id:idTask}).then(async () => {
+        const response = await this.$axios.get('http://localhost:8080/task/taskByIdTodo/'+idTodo)
+        this.tasks = response.data.tasks
+      })
     },
 
     cancelAction(id){

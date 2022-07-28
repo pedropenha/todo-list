@@ -10,8 +10,6 @@
         <slot></slot>
       </section>
       <footer class="modal-card-foot">
-        <button class="button is-success" @click="$emit('save')">{{buttonSave}}</button>
-        <button class="button" @click="$emit('cancel')">{{buttonCancel}}</button>
       </footer>
     </div>
   </div>
@@ -23,14 +21,6 @@ export default {
     title: {
       type: String,
       required: true
-    },
-    buttonSave:{
-      type: String,
-      default: 'Save'
-    },
-    buttonCancel:{
-      type: String,
-      default: 'Cancel'
     },
     activeModal:{
       type: Boolean,
