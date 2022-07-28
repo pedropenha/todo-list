@@ -1,12 +1,12 @@
 <template>
   <section id="main">
     <main>
-      <Modal :activeModal="activeModal" title="Compras" buttonSave="Salvar" buttonCancel="Cancelar" @closeModal="activeModal = !activeModal">
-        <form>
+      <Modal :activeModal="activeModal" :title="todo.name" buttonSave="Salvar" buttonCancel="Cancelar" @closeModal="activeModal = !activeModal">
+        <form @submit.prevent="insertTask()">
           <div class="columns">
             <div class="column is-10 field">
               <label class="label">Task</label>
-              <input type="text" class="input w-100" />
+              <input type="text" class="input w-100" v-model="task.name"/>
             </div>
             <div class="column is-2">
               <label class="label op-0">Add</label>
@@ -14,33 +14,46 @@
             </div>
           </div>
           <hr/>
-          <div class="is-flex is-justify-content-center is-align-content-center is-flex-wrap-wrap w-100">
+          <div v-if="tasks.length > 0">
+            <div class="is-flex is-justify-content-center is-align-content-center is-flex-wrap-wrap w-100" v-for="{id, content} in tasks" :key="id" v-if="tasks.length > 0">
             <div class="w-100 task-item p-3 mb-3 is-flex is-justify-content-space-between">
-              <p class="is-bold is-flex is-align-items-center">Task 1</p>
-              <div class="is-flex">
-                <Button icon="edit" classButton="button is-info" class="pr-2"/>
-                <Button icon="delete" classButton="button is-danger"/>
+                <p class="is-bold is-flex is-align-items-center">{{ content }}</p>
+                <div class="is-flex">
+                  <Button icon="check" classButton="button is-success" class="pr-2" @action="concludeTask(id)"/>
+                  <Button icon="edit" classButton="button is-info" class="pr-2" @action="editTask(id)"/>
+                  <Button icon="delete" classButton="button is-danger" @action="deleteTask(id, content)"/>
+                </div>
               </div>
+            </div>
+          </div>
+          <div class="is-flex is-flex-wrap-wrap is-justify-content-center" v-else>
+            <div>
+              <h2 class="subtitle">No task registered!</h2>
             </div>
           </div>
         </form>
       </Modal>
       <div class="container mt-6 hv-100">
         <div class="w-100 is-flex is-justify-content-space-between pb-5">
-          <form class="is-flex w-100 is-justify-content-space-between is-align-items-center">
-            <label for="toDoListName" class="label">To do list Name</label>
+          <form class="is-flex w-100 is-justify-content-space-between is-align-items-center" @submit.prevent="insertTodo">
+            <label for="toDoListName" class="label">Todo list Name</label>
             <input class="input w-100" v-model="todo.name" type="text" style="width: 65%"/>
-            <Button classButton="button is-primary" icon="add" @action="createTodoList" style="width: 10%">Add Task</Button>
+            <button class="button is-primary" type="submit">
+              Add Task
+              <span class="material-icons">add</span>
+            </button>
           </form>
         </div>
         <hr/>
         <div class="is-flex is-flex-wrap-wrap is-justify-content-space-between hv-100" v-if="todoList.length > 0">
-          <div class="w-30" v-for="{id, name, tasks} in todoList" :key="id">
-            <Button @action="openTodoList(id)">
+          <div class="w-30" v-for="{id, title} in todoList" :key="id">
+            <Button @action="openTodoList(id, title)" class="w-100">
               <TaskCard>
-                <div>
-                  <h1 class="title">{{ name }}</h1>
-                  <h2 class="subtitle">{{ tasks.length }}</h2>
+                <div class="w-100">
+                  <h1 class="title w-100">{{ title }}</h1>
+                </div>
+                <div class="is-flex is-justify-content-flex-end is-align-items-center pt-5 w-100">
+                  <Button @action="deleteTodoList(id, title)" classButton="button is-danger" icon="delete"></Button>
                 </div>
               </TaskCard>
             </Button>
@@ -48,7 +61,7 @@
         </div>
         <div class="is-flex is-flex-wrap-wrap is-justify-content-center pt-5" v-else>
           <div>
-            <h1 class="title">No task registered!</h1>
+            <h1 class="title">No todo list registered!</h1>
           </div>
         </div>
       </div>
@@ -63,8 +76,7 @@ export default{
       activeModal: false,
       todo:{
         id: '',
-        name: '',
-        tasks: [],
+        name: ''
       },
       todoList:[],
       task:{
@@ -83,9 +95,68 @@ export default{
       }
       this.todoList.push(todo)
     },
-    openTodoList(id){
+
+    editTask(id){},
+
+    deleteTask(id, content){
+      if(!confirm(`Delete ${content} task?`))
+        return false
+
+      this.$axios.delete('http://localhost:8080/task/'+id)
+
+      this.tasks.map((task, index) => {
+        if(task.id === id){
+          this.tasks.splice(index, 1)
+        }
+      })
+    },
+
+    async openTodoList(id, title){
       this.activeModal = !this.activeModal
-    }
+
+      this.todo.name = title
+      this.todo.id = id
+
+      const response = await this.$axios.get('http://localhost:8080/task/taskByIdTodo/'+id)
+
+      this.tasks = response.data.tasks
+    },
+
+    insertTodo(){
+      this.$axios.post('http://localhost:8080/todoList', {title: this.todo.name}).then(async () => {
+        const response = await this.$axios.get('http://localhost:8080/todoList')
+        this.todoList = response.data
+      }).catch((e) => {
+        console.log(e)
+      })
+    },
+
+    deleteTodoList(id, title){
+      if(!confirm(`Delete ${title} todo list`))
+        return false
+
+      this.$axios.delete('http://localhost:8080/todoList/'+id)
+
+      this.todoList.map((todoList, index) => {
+        if(todoList.id === id){
+          this.todoList.splice(index, 1)
+        }
+      })
+
+    },
+
+    insertTask(){
+      this.$axios.post('http://localhost:8080/task', {idTodo: this.todo.id, content: this.task.name}).then(async () => {
+        const response = await this.$axios.get('http://localhost:8080/task/taskByIdTodo/'+this.todo.id)
+        this.tasks = response.data.tasks
+      }).catch((e) => {
+        console.log(e)
+      })
+    },
+  },
+  async created() {
+    const response = await this.$axios.get('http://localhost:8080/todoList')
+    this.todoList = response.data
   }
 }
 </script>
@@ -119,6 +190,14 @@ export default{
 
 .task-item:hover{
   background-color: #f2f2f2;
+}
+
+.button{
+  transition: all .5s ease;
+}
+
+.button:hover{
+  box-shadow: rgba(0, 0, 0, 0.24) 0 3px 8px;
 }
 
 </style>

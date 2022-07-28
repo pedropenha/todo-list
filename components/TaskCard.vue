@@ -1,6 +1,6 @@
 <template>
   <div class="card-container">
-    <div class="p-6 is-flex">
+    <div class="p-6 is-flex is-flex-wrap-wrap">
       <slot></slot>
     </div>
   </div>
